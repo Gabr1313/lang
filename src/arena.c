@@ -19,7 +19,29 @@ typedef struct {
 #define _align_down(what) ( ((u64)(what))         & ~7ull)
 #define _align_up(what)   ((((u64)(what)) + 7ull) & ~7ull)
 
-Arena arena_new(u64 size) {
+#if defined(__unix__) || defined(__APPLE__)
+#include <sys/mman.h>
+
+// if `memory.first == -1` an error occured. Check `errno`
+// `NULL` is a valid `address`: the OS decides
+// Otherwise cosider the fact that on Linux you only have from 0x600000000000 - 0x7fffffffffff
+Arena arena_new(u64 size, void *address) {
+	Arena arena = {};
+	arena.cap = size;
+	int prot_flags = PROT_READ|PROT_WRITE;
+	int map_flags = MAP_PRIVATE|MAP_ANONYMOUS|(address ? MAP_FIXED|MAP_FIXED_NOREPLACE : 0);
+	arena.first = mmap(address, arena.cap, prot_flags, map_flags, 0, 0);
+	arena.ptr = arena.first;
+	return arena;
+}
+
+void arena_free(Arena *arena) {
+    if (munmap(arena->ptr, arena->cap) == -1) assert(false, "Failed to unmap memory");
+}
+
+#else 
+// `address` is ignored
+Arena arena_new(u64 size, void *address) {
 	Arena arena = {};
 	arena.cap   = size;
     arena.first = malloc(arena.cap);
@@ -30,6 +52,7 @@ Arena arena_new(u64 size) {
 void arena_free(Arena *arena) {
     free(arena->first);
 }
+#endif
 
 void* arena_push(Arena *arena, u64 bytes) {
 	void *retval = arena->ptr;

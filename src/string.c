@@ -3,6 +3,8 @@
 #include "utils.h"
 
 typedef struct {
-    char* ptr;
-    u64   count;
+    i8 *ptr;
+    u64 count;
 } String;
+
+#define string_print(s) (i32)s.count, s.ptr
