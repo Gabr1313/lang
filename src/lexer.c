@@ -1,21 +1,20 @@
 #pragma once
 
-#include <stdio.h>
-
-#include "utils.h"
-
-#include "arena.c"
+#include "utils.c"
 #include "token.c"
+#include "keywordsmap.c"
 
 typedef struct {
-    String source;
-    u64 pos;
+    String      source;
+    u64         pos;
+    KeywordsMap kw_map;
 } Lexer;
 
-Lexer lexer_new(String source) {
+Lexer lexer_new(String source, KeywordsMap kw_map) {
 	Lexer lex  = {};
 	lex.source = source;
     lex.pos    = 0;
+    lex.kw_map = kw_map;
 	return lex;
 }
 
@@ -71,6 +70,36 @@ void lexer_scan_number(Lexer *lex) {
     }
 }
 
+#define char_single_token(_char, _tok) \
+case _char: {                          \
+    t.type = _tok;                     \
+    lexer_next_char(lex);              \
+} break
+
+#define char_double_token_1(_char, _tok, _2char, _2tok) \
+case _char: {                                           \
+    i32 _c = lexer_next_char(lex);                      \
+    if (_c == _2char) {                                 \
+        t.type = _2tok;                                 \
+        lexer_next_char(lex);                           \
+    } else {                                            \
+        t.type = _tok;                                  \
+    }                                                   \
+} break
+
+#define char_double_token_2(_char, _tok, _2char, _2tok, _3char, _3tok) \
+case _char: {                                                          \
+    i32 _c = lexer_next_char(lex);                                     \
+    if (_c == _2char) {                                                \
+        t.type = _2tok;                                                \
+        lexer_next_char(lex);                                          \
+    } else if (_c == _3char) {                                         \
+        t.type = _3tok;                                                \
+        lexer_next_char(lex);                                          \
+    } else {                                                           \
+        t.type = _tok;                                                 \
+    }                                                                  \
+} break
 Token lexer_next_token(Lexer *lex) {
     skip_white_spaces(lex);
 
@@ -82,44 +111,13 @@ Token lexer_next_token(Lexer *lex) {
 
     t.s.ptr = lex->source.ptr + lex->pos;
     if (is_alpha(lexer_curr(lex))) {
-        t.type = TokenIdentifier;
         lexer_scan_identifier(lex);
+        t.s.count = (u32)(lex->source.ptr + lex->pos - t.s.ptr);
+        t.type    = keywordmap_find(&lex->kw_map, t.s);
     } else if (is_num(lexer_curr(lex))) {
         t.type = TokenNumber;
         lexer_scan_number(lex);
     } else {
-
-#define char_single_token(_char, _tok) \
-            case _char: {              \
-                t.type = _tok;         \
-                lexer_next_char(lex);    \
-            } break
-
-#define char_double_token_1(_char, _tok, _2char, _2tok) \
-            case _char: {                               \
-                i32 _c = lexer_next_char(lex);            \
-                if (_c == _2char) {                     \
-                    t.type = _2tok;                     \
-                    lexer_next_char(lex);                 \
-                } else {                                \
-                    t.type = _tok;                      \
-                }                                       \
-            } break
-
-#define char_double_token_2(_char, _tok, _2char, _2tok, _3char, _3tok) \
-            case _char: {                                              \
-                i32 _c = lexer_next_char(lex);                           \
-                if (_c == _2char) {                                    \
-                    t.type = _2tok;                                    \
-                    lexer_next_char(lex);                                \
-                } else if (_c == _3char) {                             \
-                    t.type = _3tok;                                    \
-                    lexer_next_char(lex);                                \
-                } else {                                               \
-                    t.type = _tok;                                     \
-                }                                                      \
-            } break
-
         switch (lexer_curr(lex)) {
             char_single_token('\n', TokenEnter);
             char_single_token(';', TokenSemiColon);
@@ -174,6 +172,6 @@ Token lexer_next_token(Lexer *lex) {
         }
     }
 
-    t.s.count = (u64)(lex->source.ptr + lex->pos - t.s.ptr);
+    t.s.count = (u32)(lex->source.ptr + lex->pos - t.s.ptr);
     return t;
 }

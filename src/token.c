@@ -5,6 +5,8 @@
 typedef enum {
     TokenIllegal,
     TokenEof,
+     
+    // Symbols
     TokenComment,
     TokenEnter,
     TokenSemiColon,
@@ -40,11 +42,21 @@ typedef enum {
     TokenNumber,
     TokenRange,
     TokenPound,
+    
+    // Keywords
+    TokenImport,
+    TokenIf,
+    TokenElse,
+    TokenReturn,
+    TokenFor,
+    TokenIn,
 } TokenType;
 
 char *tokentype_string[] = {
     "TokenIllegal",
     "TokenEof",
+
+    // Symbols
     "TokenComment",
     "TokenEnter",
     "TokenSemiColon",
@@ -80,9 +92,17 @@ char *tokentype_string[] = {
     "TokenNumber",
     "TokenRange",
     "TokenPound", 
+
+    // Keywords
+    "TokenImport",
+    "TokenIf",
+    "TokenElse",
+    "TokenReturn",
+    "TokenFor",
+    "TokenIn",
 };
 
 typedef struct {
     TokenType type;
-    String s;
+    String    s;
 } Token;

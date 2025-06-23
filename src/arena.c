@@ -1,8 +1,10 @@
 #pragma once
 
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
-#include "utils.h"
+#include "utils.c"
 
 // 64-bit aligned
 typedef struct {
@@ -19,7 +21,7 @@ typedef struct {
 #define _align_down(what) ( ((u64)(what))         & ~7ull)
 #define _align_up(what)   ((((u64)(what)) + 7ull) & ~7ull)
 
-#if defined(__unix__) || defined(__APPLE__)
+#ifdef LANG_UNIX
 #include <sys/mman.h>
 
 // if `memory.first == -1` an error occured. Check `errno`
@@ -36,12 +38,13 @@ Arena arena_new(u64 size, void *address) {
 }
 
 void arena_free(Arena *arena) {
-    if (munmap(arena->ptr, arena->cap) == -1) assert(false, "Failed to unmap memory");
+    if (munmap(arena->first, arena->cap)) assert(false, "Failed to unmap memory");
 }
 
 #else 
 // `address` is ignored
 Arena arena_new(u64 size, void *address) {
+    (void)address;
 	Arena arena = {};
 	arena.cap   = size;
     arena.first = malloc(arena.cap);
@@ -58,6 +61,7 @@ void* arena_push(Arena *arena, u64 bytes) {
 	void *retval = arena->ptr;
 	arena->ptr = (u8*)(arena->ptr) + bytes;
 	arena->ptr = (void*)_align_up(arena->ptr);
+    if ((u8*)arena->ptr >= (u8*)arena->first + arena->cap) err("Arena finished space"); // TODO
 	return retval;
 }
 

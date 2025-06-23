@@ -5,12 +5,12 @@ typedef enum {
 } AstType;
 
 typedef struct {
-    void *ptr;
     AstType type;
+    void   *ptr;
 } AstNode;
 
-typedef struct {
+typedef struct _Ast {
     AstNode node;
-    Ast *left;
-    Ast *right;
+    struct _Ast *left;
+    struct _Ast *right;
 } Ast;
