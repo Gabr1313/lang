@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     Lexer lex = lexer_new(source, keywordsmap_new(&arena));
 
     Parser pars = parser_new(&arena, &lex);
-    parser_all(pars);
+    parser_all(&pars);
 
     file_string_free_if_not_arena(source);
     arena_free(&arena);

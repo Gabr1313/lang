@@ -1,16 +1,26 @@
 #pragma once
 
 typedef enum {
-    AstImport
+    AstImportT
 } AstType;
+
+// NOTE: This is only a place holder, for the structures below
+typedef struct {
+    AstType type;
+    void *left;
+    void *right;
+} Ast;
 
 typedef struct {
     AstType type;
-    void   *ptr;
-} AstNode;
+    String lib_name;
+} AstImport;
 
-typedef struct _Ast {
-    AstNode node;
-    struct _Ast *left;
-    struct _Ast *right;
-} Ast;
+void ast_print(Ast* ast) {
+    switch(ast->type) {
+        case AstImportT: {
+            AstImport* a = (AstImport*)ast;
+            log("AstImport: lib_name = %.*s", string_print(a->lib_name));
+        }
+    }
+}

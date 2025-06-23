@@ -105,4 +105,12 @@ char *tokentype_string[] = {
 typedef struct {
     TokenType type;
     String    s;
+    u32 row, col;
 } Token;
+
+static inline b1 token_is_separtor(Token tok) {
+    return tok.type == TokenEnter || tok.type == TokenSemicolon;
+}
+
+#define token_err(tok, str, ...) \
+    err(str ": got `%.*s` of type %s at [%u:%u]", ##__VA_ARGS__, string_print((tok).s), tokentype_string[(tok).type], (tok).row, (tok).col)

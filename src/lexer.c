@@ -6,28 +6,31 @@
 
 typedef struct {
     String      source;
-    u64         pos;
+    u32         idx, row, col;
     KeywordsMap kw_map;
 } Lexer;
 
 Lexer lexer_new(String source, KeywordsMap kw_map) {
 	Lexer lex  = {};
 	lex.source = source;
-    lex.pos    = 0;
     lex.kw_map = kw_map;
+    lex.row    = 1;
+    lex.col    = 1;
 	return lex;
 }
 
 static inline i8 lexer_curr(Lexer *lex) {
-    return lex->source.ptr[lex->pos];
+    return lex->source.ptr[lex->idx];
 }
 
 static inline b1 lexer_finished(Lexer *lex) {
-    return lex->pos == lex->source.count;
+    return lex->idx == lex->source.count;
 }
 
 static inline i32 lexer_next_char(Lexer *lex) {
-    return lex->source.ptr[++(lex->pos)];
+    if (lexer_curr(lex) == '\n') lex->row++, lex->col=1;
+    else lex->col++;
+    return lex->source.ptr[++(lex->idx)];
 }
 
 static inline b1 is_white_space(i32 c) {
@@ -35,7 +38,7 @@ static inline b1 is_white_space(i32 c) {
 }
 
 static inline b1 is_enter(i32 c) {
-    return c == '\n' || c == '\r';;
+    return c == '\n' || c == '\r';
 }
 
 static inline b1 is_white_space_or_enter(i32 c) {
@@ -100,6 +103,7 @@ case _char: {                                                          \
         t.type = _tok;                                                 \
     }                                                                  \
 } break
+
 Token lexer_next_token(Lexer *lex) {
     skip_white_spaces(lex);
 
@@ -109,10 +113,12 @@ Token lexer_next_token(Lexer *lex) {
         return t;
     }
 
-    t.s.ptr = lex->source.ptr + lex->pos;
+    t.s.ptr = lex->source.ptr + lex->idx;
+    t.row = lex->row;
+    t.col = lex->col;
     if (is_alpha(lexer_curr(lex))) {
         lexer_scan_identifier(lex);
-        t.s.count = (u32)(lex->source.ptr + lex->pos - t.s.ptr);
+        t.s.count = (u32)(lex->source.ptr + lex->idx - t.s.ptr);
         t.type    = keywordmap_find(&lex->kw_map, t.s);
     } else if (is_num(lexer_curr(lex))) {
         t.type = TokenNumber;
@@ -172,6 +178,6 @@ Token lexer_next_token(Lexer *lex) {
         }
     }
 
-    t.s.count = (u32)(lex->source.ptr + lex->pos - t.s.ptr);
+    t.s.count = (u32)(lex->source.ptr + lex->idx - t.s.ptr);
     return t;
 }
