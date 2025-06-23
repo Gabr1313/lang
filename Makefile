@@ -1,4 +1,4 @@
-CC = gcc -std=c99
+CC = gcc -std=c23
 W_FLAGS = -Wall -Wextra -Wconversion -Wshadow -Wstrict-overflow -Wfloat-equal \
 	-Wformat=2 -Wstrict-aliasing -Wcast-align \
 	-Wstrict-prototypes -Wpointer-arith -Wundef -Wnull-dereference

@@ -1,7 +1,7 @@
-#if 1
-    #if defined(__unix__) || defined(__APPLE__)
-        #define LANG_UNIX
-    #endif
+#if 1 && (defined(__unix__) || defined(__APPLE__))
+    #define LANG_UNIX 1
+#else
+    #define LANG_UNIX 0
 #endif
 
 #include "utils.c"

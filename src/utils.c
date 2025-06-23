@@ -1,5 +1,7 @@
 #pragma once
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -33,10 +35,37 @@ typedef uint64_t b64;
 #define _log(stream, format, ...)  fprintf(stream, format "\n", ##__VA_ARGS__)
 #define loginfo(...)  _log(stdout, "[INFO] " __VA_ARGS__)
 #define log(...)      _log(stdout, __VA_ARGS__)
-#define err(message, ...)  do {                                                  \
+
+#if LANG_UNIX && defined(DBG)
+#include <execinfo.h>
+#include <dlfcn.h>
+#include <unistd.h>
+
+#define err(message, ...)  do {                                                                           \
+    _log(stderr, "[ERROR] (%s:%u) " message, __FILE__, __LINE__, ##__VA_ARGS__);                          \
+    void *buffer[64];                                                                                     \
+    int size = backtrace(buffer, 64);                                                                     \
+    for (int i = 0, cnt = 0; i < size-1; i++) {                                                           \
+        Dl_info info;                                                                                     \
+        if (dladdr(buffer[i], &info)) {                                                                   \
+            char cmd[512];                                                                                \
+            snprintf(cmd, sizeof(cmd), "addr2line -f -p -e \"%s\" %p", info.dli_fname, buffer[i]);        \
+            FILE *fp = popen(cmd, "r");                                                                   \
+            if (fp) {                                                                                     \
+                char line[512];                                                                           \
+                if (fgets(line, sizeof(line), fp) && line[0] != '?') printf("    %-2d: %s", cnt++, line); \
+                pclose(fp);                                                                               \
+            }                                                                                             \
+        }                                                                                                 \
+    }                                                                                                     \
+    exit(1);                                                                                              \
+} while(0)
+#else
+#define err(message, ...) do {                                                   \
     _log(stderr, "[ERROR] (%s:%u) " message, __FILE__, __LINE__, ##__VA_ARGS__); \
     exit(1);                                                                     \
 } while(0)
+#endif
 
 #ifdef DBG
 #define dbg(...)  _log(stdout, "[DEBUG] " __VA_ARGS__)
@@ -45,7 +74,7 @@ typedef uint64_t b64;
     do {                                                                \
         if (!(cond)) {                                                  \
             err("Assert failed `%s` : " message, #cond, ##__VA_ARGS__); \
-			exit(1);                                                    \
+            exit(1);                                                    \
         }                                                               \
     } while (0)
 

@@ -9,7 +9,7 @@ typedef enum {
     // Symbols
     TokenComment,
     TokenEnter,
-    TokenSemiColon,
+    TokenSemicolon,
     TokenColon,
     TokenComma,
     TokenEqual,
@@ -59,7 +59,7 @@ char *tokentype_string[] = {
     // Symbols
     "TokenComment",
     "TokenEnter",
-    "TokenSemiColon",
+    "TokenSemicolon",
     "TokenColon",
     "TokenComma",
     "TokenEqual",

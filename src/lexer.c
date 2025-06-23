@@ -120,7 +120,7 @@ Token lexer_next_token(Lexer *lex) {
     } else {
         switch (lexer_curr(lex)) {
             char_single_token('\n', TokenEnter);
-            char_single_token(';', TokenSemiColon);
+            char_single_token(';', TokenSemicolon);
             char_single_token(':', TokenColon);
             char_single_token(',', TokenComma);
             char_single_token('(', TokenParenL);

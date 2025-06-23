@@ -21,7 +21,7 @@ typedef struct {
 #define _align_down(what) ( ((u64)(what))         & ~7ull)
 #define _align_up(what)   ((((u64)(what)) + 7ull) & ~7ull)
 
-#ifdef LANG_UNIX
+#if LANG_UNIX
 #include <sys/mman.h>
 
 // if `memory.first == -1` an error occured. Check `errno`

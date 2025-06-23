@@ -3,7 +3,7 @@
 #include "string.c"
 #include "arena.c"
 
-#ifdef LANG_UNIX 
+#if LANG_UNIX 
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
