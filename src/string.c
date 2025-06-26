@@ -10,7 +10,7 @@ typedef struct {
 #define string_print(s) (i32)s.count, s.ptr
 
 String string_from_char(char *t) {
-    String s = {};
+    String s = {0};
     s.ptr    = t;
     while (s.ptr[s.count]) s.count++;
     return s;

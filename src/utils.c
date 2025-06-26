@@ -41,24 +41,24 @@ typedef uint64_t b64;
 #include <dlfcn.h>
 #include <unistd.h>
 
-#define err(message, ...)  do {                                                                           \
-    _log(stderr, "[ERROR] (%s:%u) " message, __FILE__, __LINE__, ##__VA_ARGS__);                          \
-    void *buffer[64];                                                                                     \
-    int size = backtrace(buffer, 64);                                                                     \
-    for (int i = 0, cnt = 0; i < size-1; i++) {                                                           \
-        Dl_info info;                                                                                     \
-        if (dladdr(buffer[i], &info)) {                                                                   \
-            char cmd[512];                                                                                \
-            snprintf(cmd, sizeof(cmd), "addr2line -f -p -e \"%s\" %p", info.dli_fname, buffer[i]);        \
-            FILE *fp = popen(cmd, "r");                                                                   \
-            if (fp) {                                                                                     \
-                char line[512];                                                                           \
-                if (fgets(line, sizeof(line), fp) && line[0] != '?') printf("    %-2d: %s", cnt++, line); \
-                pclose(fp);                                                                               \
-            }                                                                                             \
-        }                                                                                                 \
-    }                                                                                                     \
-    exit(1);                                                                                              \
+#define err(message, ...)  do {                                                                            \
+    _log(stderr, "[ERROR] (%s:%u) " message, __FILE__, __LINE__, ##__VA_ARGS__);                           \
+    void *buffer[64];                                                                                      \
+    int size = backtrace(buffer, 64);                                                                      \
+    for (int i = 0, cnt = 0; i < size-1; i++) {                                                            \
+        Dl_info info;                                                                                      \
+        if (dladdr(buffer[i], &info)) {                                                                    \
+            char cmd[512];                                                                                 \
+            snprintf(cmd, sizeof(cmd), "addr2line -f -p -e \"%s\" %p", info.dli_fname, buffer[i]);         \
+            FILE *fp = popen(cmd, "r");                                                                    \
+            if (fp) {                                                                                      \
+                char line[512];                                                                            \
+                if (fgets(line, sizeof(line), fp) && line[0] != '?') printf("    #%-2d: %s", cnt++, line); \
+                pclose(fp);                                                                                \
+            }                                                                                              \
+        }                                                                                                  \
+    }                                                                                                      \
+    exit(1);                                                                                               \
 } while(0)
 #else
 #define err(message, ...) do {                                                   \

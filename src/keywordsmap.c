@@ -6,7 +6,6 @@
 
 #define STRINGMAP_MAX_FILL 2
 
-// TODO: verify it is 16 bytes big
 typedef struct {
     String    s;
     TokenType type;
@@ -48,7 +47,7 @@ void keywordmap_insert(KeywordsMap *hm, String x, TokenType type) {
 }
 
 KeywordsMap keywordsmap_new(Arena *arena) {
-    KeywordsMap hm = {};
+    KeywordsMap hm = {0};
     hm.arena       = arena;
     hm.cap_exp     = 4;
     hm.ptr         = arena_push_zero(hm.arena, sizeof(*hm.ptr)*(1u << hm.cap_exp));

@@ -13,10 +13,23 @@ typedef struct {
 	u64 cap;
 } Arena;
 
-#define arena_push_struct(arena, type)            (type *)arena_push(     (arena), sizeof(type))
-#define arena_push_struct_zero(arena, type)       (type *)arena_push_zero((arena), sizeof(type))
-#define arena_push_array(arena, type, count)      (type *)arena_push(     (arena), sizeof(type)*(count))
-#define arena_push_array_zero(arena, type, count) (type *)arena_push_zero((arena), sizeof(type)*(count))
+#define arena_push_struct(arena, type)            arena_push(     (arena), sizeof(type))
+#define arena_push_struct_zero(arena, type)       arena_push_zero((arena), sizeof(type))
+#define arena_push_array(arena, type, count)      arena_push(     (arena), sizeof(type)*(count))
+#define arena_push_array_zero(arena, type, count) arena_push_zero((arena), sizeof(type)*(count))
+
+// TODO: really really ugly
+char *arena_tprint_start = 0;
+#define arena_tprint(arena, format, ...) do {                                      \
+    if (!arena_tprint_start) arena_tprint_start = arena->ptr;                      \
+    arena->ptr = (char *)arena->ptr + sprintf(arena->ptr, format, ##__VA_ARGS__);  \
+} while (0)
+#define arena_tprint_reset() do {        \
+    if (arena_tprint_start) {            \
+        arena->ptr = arena_tprint_start; \
+    arena_tprint_start = 0;              \
+    }                                    \
+} while (0)
 
 #define _align_down(what) ( ((u64)(what))         & ~7ull)
 #define _align_up(what)   ((((u64)(what)) + 7ull) & ~7ull)
@@ -28,7 +41,7 @@ typedef struct {
 // `NULL` is a valid `address`: the OS decides
 // Otherwise cosider the fact that on Linux you only have from 0x600000000000 - 0x7fffffffffff
 Arena arena_new(u64 size, void *address) {
-	Arena arena = {};
+	Arena arena = {0};
 	arena.cap = size;
 	int prot_flags = PROT_READ|PROT_WRITE;
 	int map_flags = MAP_PRIVATE|MAP_ANONYMOUS|(address ? MAP_FIXED|MAP_FIXED_NOREPLACE : 0);
@@ -45,7 +58,7 @@ void arena_free(Arena *arena) {
 // `address` is ignored
 Arena arena_new(u64 size, void *address) {
     (void)address;
-	Arena arena = {};
+	Arena arena = {0};
 	arena.cap   = size;
     arena.first = malloc(arena.cap);
 	arena.ptr   = arena.first;

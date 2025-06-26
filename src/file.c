@@ -16,7 +16,7 @@ String file_to_string(char *filename, Arena *_arena) {
     if (fd == -1) err("Failed to open file `%s`", filename);
     struct stat st;
     if (fstat(fd, &st) == -1) err("Failed to read the stats of file `%s`", filename);
-    String s = {};
+    String s = {0};
     s.count = (u32)st.st_size;
     s.ptr = mmap(NULL, s.count, PROT_READ, MAP_PRIVATE, fd, 0);
     if (s.ptr == MAP_FAILED) err("Failed to map file `%s` to memory", filename); 
@@ -31,7 +31,7 @@ String file_to_string(char *filename, Arena *arena) {
     FILE* file= fopen(filename, "r");
     if (file == NULL) err("Failed to open file `%s`", filename);
     fseek(file, 0, SEEK_END);
-    String s = {};
+    String s = {0};
     s.count = (u32)ftell(file);
     rewind(file);
     s.ptr = arena_push(arena, s.count);

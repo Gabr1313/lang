@@ -11,7 +11,7 @@ typedef struct {
 } Lexer;
 
 Lexer lexer_new(String source, KeywordsMap kw_map) {
-	Lexer lex  = {};
+	Lexer lex  = {0};
 	lex.source = source;
     lex.kw_map = kw_map;
     lex.row    = 1;
@@ -107,7 +107,7 @@ case _char: {                                                          \
 Token lexer_next_token(Lexer *lex) {
     skip_white_spaces(lex);
 
-    Token t = {};
+    Token t = {0};
     if (lexer_finished(lex)) {
         t.type = TokenEof;
         return t;
